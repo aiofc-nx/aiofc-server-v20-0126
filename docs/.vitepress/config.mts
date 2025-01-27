@@ -8,7 +8,7 @@ export default defineConfig({
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: "Home", link: "/" },
-      { text: "Examples", link: "/markdown-examples" },
+      { text: "Technologies", link: "/technologies/pnpm" },
     ],
 
     sidebar: [
@@ -17,11 +17,18 @@ export default defineConfig({
         items: [{ text: "Log：01", link: "/commits/log-01" }],
       },
       {
-        text: "Examples",
+        text: "Log：02",
+        items: [{ text: "Log：02", link: "/commits/log-02" }],
+      },
+
+      {
+        text: "Technologies",
         items: [
+          { text: "pnpm", link: "/technologies/pnpm" },
+          { text: "git-hooks", link: "/technologies/git/git-hooks" },
           { text: "Markdown Examples", link: "/markdown-examples" },
           { text: "Runtime API Examples", link: "/api-examples" },
-          { text: "VitePress", link: "/records/vitepress" },
+          { text: "VitePress", link: "/technologies/vitepress" },
         ],
       },
     ],

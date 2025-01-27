@@ -25,9 +25,15 @@
     "@commitlint/cli": "^19.6.1",
     "@commitlint/config-conventional": "^19.6.0",
     "@commitlint/config-nx-scopes": "^19.5.0",
+    "@nestjs/schematics": "^10.0.1",
+    "@nx/nest": "20.3.3",
+    "@nx/next": "20.3.3",
+    "@nx/workspace": "20.3.3",
     "commitizen": "^4.3.1",
     "cz-customizable": "^7.4.0",
     "husky": "^8.0.0",
+    "nx": "20.3.3",
     "vitepress": "^1.6.3"
-  }
+  },
+  "dependencies": {}
 }
