@@ -1,0 +1,67 @@
+# pino-pretty 配置文件
+
+# 在输出中隐藏对象（但不包括错误对象）
+hideObject: false
+
+# 时间格式化配置
+# 使用 SYS:standard 将使用系统时区并格式化为 yyyy-mm-dd HH:MM:ss.l o
+translateTime: 'SYS:standard'
+
+# 日志级别相关配置
+levelFirst: true # 在日志行的开头显示日志级别
+levelKey: 'level' # 用于表示日志级别的键名
+levelLabel: 'levelLabel' # 日志级别的显示标签
+
+# 消息相关配置
+messageKey: 'msg' # 用作高亮显示消息的键名
+singleLine: true # 在单行上打印每条日志消息
+timestampKey: 'time' # 时间戳的键名
+
+# 日志级别控制
+minimumLevel: 'info' # 最低日志级别
+
+# 消息格式化
+messageFormat: '{level} - {pid} - {msg}' # 自定义消息格式
+
+# 颜色相关配置
+colorize: true # 为输出消息添加颜色
+colorizeObjects: true # 为 JSON 对象添加颜色
+
+# 换行符配置
+crlf: false # 使用 \n 而不是 \r\n
+
+# 错误处理配置
+errorLikeObjectKeys:
+  - 'err'
+  - 'error'
+errorProps: 'type,message,stack' # 错误对象要显示的属性
+
+# 字段过滤
+ignore: 'pid,hostname' # 要忽略的字段
+include: 'time,level,msg' # 要包含的字段
+
+# 输出行为配置
+sync: false # 异步输出
+destination: '/var/log/app.log' # 日志输出位置
+append: true # 追加模式写入文件
+mkdir: true # 自动创建日志目录
+
+# 自定义日志级别
+customLevels:
+  debug: 20
+  info: 30
+  warn: 40
+  error: 50
+  fatal: 60
+
+# 自定义颜色配置
+customColors:
+  debug: 'blue'
+  info: 'green'
+  warn: 'yellow'
+  error: 'red'
+  fatal: 'magenta'
+  default: 'white' # 默认颜色
+
+# 是否只使用自定义属性
+useOnlyCustomProps: true

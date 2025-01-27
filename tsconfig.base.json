@@ -20,6 +20,7 @@
     "strictNullChecks": false,
     "declaration": true,
     "paths": {
+      "@aiofc/pino-logger": ["packages/pino-logger/src/index.ts"],
       "@aiofc/zod-env": ["packages/zod-env/src/index.ts"]
     }
   }
