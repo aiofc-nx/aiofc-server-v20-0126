@@ -20,6 +20,7 @@
     "imgildev.vscode-auto-barrel",
     "ms-azuretools.vscode-docker",
     "jmkrivocapich.drawfolderstructure",
-    "brunnerh.insert-unicode"
+    "brunnerh.insert-unicode",
+    "pflannery.vscode-versionlens"
   ]
 }

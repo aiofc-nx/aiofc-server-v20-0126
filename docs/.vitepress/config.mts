@@ -31,6 +31,8 @@ export default defineConfig({
           { text: 'VitePress', link: '/technologies/vitepress' },
           { text: 'TypeDoc', link: '/technologies/typedoc' },
           { text: 'Config', link: '/libs/config' },
+          { text: 'Logger', link: '/libs/logger' },
+          { text: 'i18n', link: '/libs/i18n' },
         ],
       },
       {

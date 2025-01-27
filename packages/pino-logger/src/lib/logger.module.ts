@@ -43,11 +43,10 @@ export class LoggerModule {
         sensitiveFields: [],
         logRequestBody: false,
         logResponseBody: false,
-        // ... 其他 LoggerParams 的默认值 ...
       },
     };
 
-    const decorated = await createProvidersForDecorated();
+    const decorated = createProvidersForDecorated();
 
     return {
       module: LoggerModule,
@@ -61,7 +60,7 @@ export class LoggerModule {
               cls.set('traceId', req.headers['x-trace-id'] || req.id);
             },
           },
-        }),
+        }) as any,
       ],
       providers: [Logger, ...decorated, PinoLogger, paramsProvider],
       exports: [Logger, ...decorated, PinoLogger, paramsProvider],

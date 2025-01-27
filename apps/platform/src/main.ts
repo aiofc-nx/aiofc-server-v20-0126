@@ -1,4 +1,4 @@
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import {
   FastifyAdapter,
   NestFastifyApplication,
@@ -7,6 +7,10 @@ import { AppModule } from './app.module';
 import { Logger } from '@aiofc/pino-logger';
 import { randomUUID } from 'crypto';
 import { EnvConfig } from './config/env.config';
+import { I18nService } from 'nestjs-i18n';
+import { ClsService } from 'nestjs-cls';
+import { I18nTranslations } from './generated/i18n.generated';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 
 /**
  * 应用程序引导函数
@@ -49,6 +53,11 @@ async function bootstrap() {
     );
 
     const config = app.get<EnvConfig>(EnvConfig);
+    // 注册全局异常过滤器
+    const httpAdapter = app.get(HttpAdapterHost);
+    const i18n = app.get<I18nService<I18nTranslations>>(I18nService);
+    const cls = app.get(ClsService);
+    app.useGlobalFilters(new GlobalExceptionFilter(httpAdapter, i18n, cls));
 
     // 使用自定义日志服务
     const logger = app.get(Logger);
