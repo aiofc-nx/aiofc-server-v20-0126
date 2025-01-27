@@ -1,13 +1,15 @@
 node_modules
+dist
+temp
 
 # VuePress default temp directory
 docs/.vuepress/.temp
 # VuePress default cache directory
-docs/.vuepress/.cache
+docs/.vuepress/cache
 # VuePress default build output directory
 docs/.vuepress/dist
 
 
-
+.nx
 .nx/cache
 .nx/workspace-data
