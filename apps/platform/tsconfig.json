@@ -4,6 +4,9 @@
   "include": [],
   "references": [
     {
+      "path": "../../packages/zod-env"
+    },
+    {
       "path": "./tsconfig.app.json"
     },
     {
@@ -11,6 +14,8 @@
     }
   ],
   "compilerOptions": {
+    "composite": true,
+    "declaration": true,
     "esModuleInterop": true
   }
 }
