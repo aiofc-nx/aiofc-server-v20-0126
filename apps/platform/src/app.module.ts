@@ -3,7 +3,7 @@ import { AppController } from './app/app.controller';
 import { AppService } from './app/app.service';
 import { ConfigModule } from './config/config.module';
 import { LoggerModule, loggingInitConfig } from '@aiofc/pino-logger';
-import { EnvConfig } from './config/env.config';
+import { ConfigService } from './config/config.service';
 import {
   AcceptLanguageResolver,
   HeaderResolver,
@@ -12,10 +12,12 @@ import {
   QueryResolver,
 } from 'nestjs-i18n';
 import path from 'path';
+import { DatabaseModule } from './database/database.module';
 @Module({
   imports: [
     ConfigModule,
     LoggerModule.forRootAsync(loggingInitConfig) as Promise<DynamicModule>,
+    DatabaseModule,
     I18nModule.forRootAsync({
       useFactory: () => ({
         fallbackLanguage: 'zh',
@@ -40,6 +42,6 @@ import path from 'path';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService, EnvConfig],
+  providers: [AppService, ConfigService],
 })
 export class AppModule {}
