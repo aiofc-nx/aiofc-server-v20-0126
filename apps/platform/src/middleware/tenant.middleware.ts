@@ -1,20 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { TenantContextService } from '../services/tenant-context.service';
+import { TenantContextService } from '../common/tenant-isolation/tenant-context.service';
+// import { ConfigService } from '../config/config.service';
 
-/**
- * 租户中间件
- *
- * 用于处理多租户请求的中间件类。
- * 从请求头中提取租户Schema并设置到租户上下文中。
- */
 @Injectable()
 export class TenantMiddleware {
-  /**
-   * 构造函数
-   * @param tenantContext - 租户上下文服务,用于管理租户信息
-   */
-  constructor(private tenantContext: TenantContextService) {}
+  constructor(private readonly tenantContext: TenantContextService) {}
 
   /**
    * 中间件处理函数
@@ -50,31 +41,20 @@ export class TenantMiddleware {
       return next();
     }
 
-    // 添加详细的调试日志
-    console.log('TenantMiddleware processing request:', {
-      url: req.url,
-      originalUrl: req.originalUrl,
-      method: req.method,
-      headers: req.headers,
-      routePattern: (req as any).routerPath, // 获取路由模式
-    });
-
-    // 从请求头中获取租户Schema
     const schema = req.headers['x-tenant-schema'] as string;
     if (!schema) {
-      throw new Error('Tenant schema is required');
+      _reply.status(400).send({ message: 'Tenant schema is required' });
+      return;
     }
 
-    // 验证 schema 格式，保证用户输入的schema格式正确
-    const schemaRegex = /^t_[a-zA-Z0-9_]+$/;
-    if (!schemaRegex.test(schema)) {
-      throw new Error(
-        'Invalid tenant schema format - must start with "t_" and contain only letters, numbers, and underscores',
-      );
+    // 验证 Schema 格式
+    if (!/^t_[a-zA-Z0-9_]+$/.test(schema)) {
+      _reply.status(400).send({ message: 'Invalid tenant schema format' });
+      return;
     }
 
-    // 将租户Schema存入CLS中，便于在请求时获取租户Schema
+    // 将租户 Schema 存入 CLS 中
     this.tenantContext.setTenantSchemaInCls(schema);
-    await next();
+    next();
   }
 }

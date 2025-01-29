@@ -34,4 +34,8 @@ export class ConfigService extends ZodEnv<EnvValidatedConfig> {
   get database() {
     return Object.freeze({ ...this.config.database });
   }
+
+  get isolationStrategy(): string {
+    return this.config.database.isolationStrategy || 'schema';
+  }
 }

@@ -1,28 +1,13 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as schema from '../schema';
-import { ConfigService } from '../../config/config.service';
-
-/**
- * 租户隔离策略枚举
- *
- * @enum {string}
- * @description 定义了多租户系统中数据隔离的两种策略:
- * - SCHEMA: 使用独立的数据库Schema来隔离不同租户的数据
- * - ROW: 在同一个Schema中使用行级安全性来隔离不同租户的数据
- */
-export enum TenantIsolationStrategy {
-  /** 使用独立Schema进行租户隔离 */
-  SCHEMA = 'schema',
-  /** 使用行级安全策略进行租户隔离 */
-  ROW = 'row',
-}
-
-export enum SchemaError {
-  SCHEMA_NOT_FOUND = 'SCHEMA_NOT_FOUND',
-  SCHEMA_ALREADY_EXISTS = 'SCHEMA_ALREADY_EXISTS',
-}
+import * as schema from './schema';
+import { ConfigService } from '../config/config.service';
+import {
+  TenantIsolationStrategy,
+  TenantSchemaError,
+} from '../common/tenant-isolation/tenant-isolation.constant';
+import { DatabaseConnectionService } from '../common/database/database-connection.service';
 
 /**
  * 数据库服务
@@ -42,24 +27,18 @@ export class DatabaseService implements OnModuleInit {
    * 构造函数
    * @param env - 配置服务,用于获取数据库连接配置
    */
-  constructor(private env: ConfigService) {
-    this.client = postgres({
-      host: this.env.database.host,
-      port: this.env.database.port,
-      user: this.env.database.user,
-      password: this.env.database.password,
-      database: this.env.database.name,
-      max: this.env.database.pool.max, // 最大连接数
-      idle_timeout: this.env.database.pool.idle_timeout, // 空闲连接超时（秒）
-      connect_timeout: this.env.database.pool.connect_timeout, // 连接超时（秒）
-      max_lifetime: this.env.database.pool.max_lifetime, // 连接最大生命周期（秒）
-    });
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly connectionService: DatabaseConnectionService
+  ) {
+    this.client = this.connectionService.getConnection();
 
     // 创建单个 drizzle 实例
     this.db = drizzle(this.client);
     this.query = drizzle(this.client, { schema }).query;
     this.isolationStrategy =
-      (this.env.database.isolationStrategy as TenantIsolationStrategy) ||
+      (this.configService.database
+        .isolationStrategy as TenantIsolationStrategy) ||
       TenantIsolationStrategy.ROW;
   }
 
@@ -81,7 +60,7 @@ export class DatabaseService implements OnModuleInit {
 
     await this.client`
       ALTER DATABASE ${this.client(
-        this.env.database.name
+        this.configService.database.name
       )} SET row_security = on;
     `;
 
@@ -112,7 +91,10 @@ export class DatabaseService implements OnModuleInit {
     try {
       const exists = await this.checkSchemaExistsInDb(schema);
       if (exists) {
-        return { success: false, error: SchemaError.SCHEMA_ALREADY_EXISTS };
+        return {
+          success: false,
+          error: TenantSchemaError.SCHEMA_ALREADY_EXISTS,
+        };
       }
 
       await this.client`
@@ -174,7 +156,7 @@ export class DatabaseService implements OnModuleInit {
         // 检查Schema是否存在
         const schemaExists = await this.checkSchemaExistsInDb(schemaName);
         if (!schemaExists) {
-          throw new Error(SchemaError.SCHEMA_NOT_FOUND);
+          throw new Error(TenantSchemaError.SCHEMA_NOT_FOUND);
         }
 
         // 设置搜索路径到租户的schema

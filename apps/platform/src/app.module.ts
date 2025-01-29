@@ -1,8 +1,19 @@
-import { DynamicModule, Module } from '@nestjs/common';
+import {
+  DynamicModule,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { AppController } from './app/app.controller';
 import { AppService } from './app/app.service';
 import { ConfigModule } from './config/config.module';
-import { LoggerModule, loggingInitConfig } from '@aiofc/pino-logger';
+import {
+  DetailedLoggingInterceptor,
+  LoggerModule,
+  loggingInitConfig,
+  SimpleLoggingInterceptor,
+} from '@aiofc/pino-logger';
 import { ConfigService } from './config/config.service';
 import {
   AcceptLanguageResolver,
@@ -13,11 +24,15 @@ import {
 } from 'nestjs-i18n';
 import path from 'path';
 import { DatabaseModule } from './database/database.module';
+import { TenantModule } from './modules/tenant/tenant.module';
+import { TenantContextService } from './common/tenant-isolation/tenant-context.service';
+import { APP_INTERCEPTOR } from '@nestjs/core/constants';
+import { TenantMiddleware } from './middleware/tenant.middleware';
+
 @Module({
   imports: [
     ConfigModule,
     LoggerModule.forRootAsync(loggingInitConfig) as Promise<DynamicModule>,
-    DatabaseModule,
     I18nModule.forRootAsync({
       useFactory: () => ({
         fallbackLanguage: 'zh',
@@ -40,8 +55,28 @@ import { DatabaseModule } from './database/database.module';
         new HeaderResolver(['x-lang']),
       ],
     }),
+    DatabaseModule,
+    TenantModule,
   ],
   controllers: [AppController],
-  providers: [AppService, ConfigService],
+  providers: [
+    AppService,
+    ConfigService,
+    TenantContextService,
+    {
+      provide: APP_INTERCEPTOR, // nestjs 内置的令牌
+      useClass:
+        process.env.NODE_ENV === 'development'
+          ? DetailedLoggingInterceptor
+          : SimpleLoggingInterceptor,
+    },
+  ],
+  exports: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(TenantMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
+}
