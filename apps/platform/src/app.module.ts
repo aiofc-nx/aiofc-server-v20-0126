@@ -1,9 +1,20 @@
-import { DynamicModule, Module } from '@nestjs/common';
+import {
+  DynamicModule,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { AppController } from './app/app.controller';
 import { AppService } from './app/app.service';
 import { ConfigModule } from './config/config.module';
-import { LoggerModule, loggingInitConfig } from '@aiofc/pino-logger';
-import { EnvConfig } from './config/env.config';
+import {
+  DetailedLoggingInterceptor,
+  LoggerModule,
+  loggingInitConfig,
+  SimpleLoggingInterceptor,
+} from '@aiofc/pino-logger';
+import { ConfigService } from './config/config.service';
 import {
   AcceptLanguageResolver,
   HeaderResolver,
@@ -12,6 +23,12 @@ import {
   QueryResolver,
 } from 'nestjs-i18n';
 import path from 'path';
+import { DatabaseModule } from './database/database.module';
+import { TenantModule } from './modules/tenant/tenant.module';
+import { TenantContextService } from './common/tenant-isolation/tenant-context.service';
+import { APP_INTERCEPTOR } from '@nestjs/core/constants';
+import { TenantMiddleware } from './middleware/tenant.middleware';
+
 @Module({
   imports: [
     ConfigModule,
@@ -38,8 +55,28 @@ import path from 'path';
         new HeaderResolver(['x-lang']),
       ],
     }),
+    DatabaseModule,
+    TenantModule,
   ],
   controllers: [AppController],
-  providers: [AppService, EnvConfig],
+  providers: [
+    AppService,
+    ConfigService,
+    TenantContextService,
+    {
+      provide: APP_INTERCEPTOR, // nestjs 内置的令牌
+      useClass:
+        process.env.NODE_ENV === 'development'
+          ? DetailedLoggingInterceptor
+          : SimpleLoggingInterceptor,
+    },
+  ],
+  exports: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(TenantMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
+}

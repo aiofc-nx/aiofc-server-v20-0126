@@ -6,7 +6,7 @@ import {
 import { AppModule } from './app.module';
 import { Logger } from '@aiofc/pino-logger';
 import { randomUUID } from 'crypto';
-import { EnvConfig } from './config/env.config';
+import { ConfigService } from './config/config.service';
 import { I18nService } from 'nestjs-i18n';
 import { ClsService } from 'nestjs-cls';
 import { I18nTranslations } from './generated/i18n.generated';
@@ -52,7 +52,7 @@ async function bootstrap() {
       }
     );
 
-    const config = app.get<EnvConfig>(EnvConfig);
+    const config = app.get<ConfigService>(ConfigService);
     // 注册全局异常过滤器
     const httpAdapter = app.get(HttpAdapterHost);
     const i18n = app.get<I18nService<I18nTranslations>>(I18nService);
